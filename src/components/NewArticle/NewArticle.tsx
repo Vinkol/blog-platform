@@ -1,62 +1,162 @@
-import React, { useState } from 'react';
-import { FieldError, useForm } from 'react-hook-form';
-import { Input, Button, Form, message } from 'antd';
-import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { useForm, FieldError } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { useCreateArticleMutation, useUpdateArticleMutation } from '../../api/apiSlice';
+import { Tag, Input, Button } from 'antd';
+import cl from './NewArticle.module.sass';
+import { NewArticleProps } from '../../types/types';
 
-const NewArticle: React.FC = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm();
-  const [loading, setLoading] = useState(false);
-  const history = useNavigate();
+const NewArticle = ({ mode = 'create', initialData = {
+  title: '',
+  body: '',
+  tagList: [],
+  description: ''
+}, articleSlug }: NewArticleProps) => {
+  const navigate = useNavigate();
+  const [tags, setTags] = useState(initialData.tagList || []);
+  const [inputValue, setInputValue] = useState('');
 
-  const onSubmit = async (data: any) => {
-    setLoading(true);
-    const token = localStorage.getItem('token');
-    try {
-      await axios.post(
-        'https://blog-platform.kata.academy/api/articles',
-        { article: data },
-        { headers: { Authorization: `Token ${token}` } }
-      );
-      message.success('Статья успешно создана');
-      history('/');
-    } catch (error) {
-      message.error('Ошибка при создании статьи');
-    } finally {
-      setLoading(false);
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+    trigger,
+    reset,
+  } = useForm({
+    defaultValues: {
+      title: initialData.title || '',
+      shortDescription: initialData.description || '',
+      text: initialData.body || '',
+    },
+  });
+
+  const [createArticle] = useCreateArticleMutation();
+  const [updateArticle] = useUpdateArticleMutation();
+
+  const handleAddTag = () => {
+    if (inputValue.trim() && !tags.includes(inputValue.trim())) {
+      setTags([...tags, inputValue.trim()]);
+      setInputValue('');
     }
   };
 
+  const handleRemoveTag = (removedTag: any) => {
+    setTags(tags.filter((tag: string) => tag !== removedTag));
+  };
+
+  const onSubmit = async (data: any) => {
+    const formattedData = {
+      title: data.title,
+      description: data.shortDescription,
+      body: data.text,
+      tagList: tags,
+    };
+    if (mode === 'create') {
+      await createArticle(formattedData).unwrap();
+      navigate('/');
+    } else if (mode === 'edit') {
+      if (!articleSlug) {
+        console.error('Ошибка: articleSlug не задан');
+        return;
+      }
+      await updateArticle({ slug: articleSlug, updatedArticle: formattedData }).unwrap();
+      reset({
+        title: formattedData.title,
+        shortDescription: formattedData.description,
+        text: formattedData.body,
+      });
+      navigate('/');
+    }
+    reset();
+  };
+
+  useEffect(() => {
+    if (mode === 'edit' && initialData) {
+      for (const [key, value] of Object.entries(initialData)) {
+        if (key === 'title' || key === 'shortDescription' || key === 'text') {
+          setValue(key as 'title' | 'shortDescription' | 'text', value as string);
+        }
+        if (key === 'tagList' && Array.isArray(value)) {
+          setTags(value);
+        }
+      }
+      setTags(initialData.tagList || []);
+    }
+  }, [mode, initialData, setValue]);
+
   return (
-    <div>
-      <h1>Создание статьи</h1>
-      <Form onFinish={handleSubmit(onSubmit)} layout="vertical">
-        <Form.Item label="Заголовок" required>
-          <Input
-            {...register('title', { required: 'Заголовок обязателен' })}
-            placeholder="Заголовок"
+    <div className={cl.signIn}>
+      <h2 className={cl.mainTitle}>
+        {mode === 'create' ? 'Create new article' : 'Edit article'}
+      </h2>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div className={cl.wrap}>
+          <label className={cl.labelTitle} htmlFor="title">
+            Заголовок
+          </label>
+          <input
+            {...register('title', { required: 'Enter title' })}
+            placeholder="Title"
+            type="text"
+            className={cl.title}
+            onBlur={() => trigger('title')}
           />
-          {errors.title && <span>{(errors.title as FieldError).message}</span>}
-        </Form.Item>
-        <Form.Item label="Краткое описание" required>
-          <Input
-            {...register('short_description', { required: 'Краткое описание обязательно' })}
-            placeholder="Краткое описание"
+          {errors.title && <p className={cl.error}>{(errors.title as FieldError).message}</p>}
+
+          <label className={cl.labelShortDescription} htmlFor="shortDescription">
+            Short description
+          </label>
+          <input
+            {...register('shortDescription', { required: 'Enter description' })}
+            placeholder="Short description"
+            type="text"
+            className={cl.shortDescription}
+            onBlur={() => trigger('shortDescription')}
           />
-          {errors.short_description && <span>{(errors.short_description as FieldError).message}</span>}
-        </Form.Item>
-        <Form.Item label="Текст" required>
-          <Input.TextArea
-            {...register('text', { required: 'Текст обязателен' })}
-            placeholder="Текст статьи"
-            rows={4}
+          {errors.shortDescription && (
+            <p className={cl.error}>{(errors.shortDescription as FieldError).message}</p>
+          )}
+
+          <label className={cl.labelShortDescription} htmlFor="text">
+            Text
+          </label>
+          <input
+            {...register('text', { required: 'Enter text' })}
+            placeholder="Text"
+            type="text"
+            className={cl.textInput}
+            onBlur={() => trigger('text')}
           />
-          {errors.title && <span>{(errors.title as FieldError).message}</span>}
-        </Form.Item>
-        <Button type="primary" htmlType="submit" loading={loading}>
-          Создать статью
+          {errors.text && <p className={cl.error}>{(errors.text as FieldError).message}</p>}
+
+          <label className={cl.labelTags} htmlFor="tags">
+            Tags
+          </label>
+          <div className={cl.tagsContainer}>
+            {tags.map((tag: string) => (
+              <Tag key={tag} closable onClose={() => handleRemoveTag(tag)} className={cl.tag}>
+                {tag}
+              </Tag>
+            ))}
+          </div>
+          <div className={cl.addTagContainer}>
+            <Input
+              type="text"
+              placeholder="Tag"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              className={cl.addTagInput}
+            />
+            <Button type="primary" onClick={handleAddTag} className={cl.addTagButton}>
+              Add tag
+            </Button>
+          </div>
+        </div>
+        <Button type="primary" htmlType="submit" className={cl.btnLogin}>
+          {mode === 'create' ? 'Send' : 'Save Changes'}
         </Button>
-      </Form>
+      </form>
     </div>
   );
 };

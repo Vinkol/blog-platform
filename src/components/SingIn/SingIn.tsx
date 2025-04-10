@@ -2,9 +2,10 @@ import cl from './SignIn.module.sass';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm, FieldError } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
-import { setUser } from '../../store/registrationSlice';
-import { useLoginUserMutation } from '../../store/apiSlice';
+import { setUser } from '../../Store/regSlice';
+import { useLoginUserMutation } from '../../api/apiSlice';
 import { Button } from 'antd';
+import { ErrorResponse } from '../../types/types';
 
 const SignIn = () => {
   const dispatch = useDispatch();
@@ -19,7 +20,7 @@ const SignIn = () => {
     setError,
   } = useForm();
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: any) => {
     try {
       const response = await loginUser({
         email: data.email,
@@ -39,8 +40,9 @@ const SignIn = () => {
       navigate('/');
     } catch (err) {
       console.error('Failed to login user: ', err);
-      if (err.data && err.data.errors) {
-        if (err.data.errors['email or password']) {
+      const error = err as ErrorResponse;
+      if (error.data && error.data.errors) {
+        if (error.data.errors['email or password']) {
           setError('password', {
             type: 'server',
             message: 'email or password is invalid',
@@ -98,7 +100,7 @@ const SignIn = () => {
         </Button>
       </form>
       <p className={cl.info}>
-        Don’t have an account? <Link to={'/signUp'}>Sign Up.</Link>
+        Don’t have an account? <Link to={'/sign-up'}>Sign Up.</Link>
       </p>
     </div>
   );

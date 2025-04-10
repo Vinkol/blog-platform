@@ -1,25 +1,29 @@
-import { useState } from 'react';
+import { JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import cl from './ArticlePage.module.sass';
 import { useSelector } from 'react-redux';
-import {
-  useGetArticleBySlugQuery,
-  useDeleteArticleMutation,
-  useToggleLikeMutation,
-} from '../../store/apiSlice';
+import { RootState } from '../../Store/store';
+import { useGetArticleBySlugQuery, useDeleteArticleMutation, useToggleLikeMutation } from '../../api/apiSlice';
+import { Spin } from 'antd';
+import AuthModal from '../AuthModal/AuthModal';
 
 const ArticlePage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [clickDelete, setClickDelete] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [toggleLike] = useToggleLikeMutation();
 
   const { data: articleData, isLoading, isError, refetch } = useGetArticleBySlugQuery(slug);
   const [deleteArticle] = useDeleteArticleMutation();
-  const currentUser = useSelector((state) => state.registration.user);
+  const currentUser = useSelector((state: RootState) => state.reg.user);
 
   const handleConfirmationDelete = async () => {
+    if (!slug) {
+      console.error('Slug is required for deletion');
+      return;
+    }
     try {
       await deleteArticle(slug).unwrap();
       navigate('/');
@@ -28,17 +32,27 @@ const ArticlePage = () => {
     }
   };
 
-  const handleLike = async (slug, isLiked) => {
+  const handleLike = async (slug: any, isLiked: any) => {
     try {
       await toggleLike({ slug, isLiked }).unwrap();
       refetch();
-    } catch (error) {
-      console.error('Ошибка при изменении лайка:', error);
+    } catch {
+      setShowAuthModal(true);
+      return;
     }
   };
 
+  const handleCloseAuthModal = () => {
+    setShowAuthModal(false);
+  }
+
+
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+    <div className="loading">
+      <Spin size="large" />
+    </div>
+    );
   }
 
   if (isError || !articleData) {
@@ -74,7 +88,7 @@ const ArticlePage = () => {
         </div>
       </div>
       <div className={cl.tags}>
-        {tagList.map((tag, index) => (
+        {tagList.map((tag: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined, index: Key | null | undefined) => (
           <button key={index} className={cl.articleTags}>
             {tag}
           </button>
@@ -112,7 +126,8 @@ const ArticlePage = () => {
           </div>
         </div>
       )}
-      <ReactMarkdown className={cl.body}>{body}</ReactMarkdown>
+      <ReactMarkdown>{body}</ReactMarkdown>
+      {showAuthModal && <AuthModal message="Пройдите авторизацию!" onClose={handleCloseAuthModal} />}
     </div>
   );
 };

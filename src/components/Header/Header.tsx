@@ -1,11 +1,13 @@
-import cl from './Header.module.sass';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../../store/registrationSlice';
-import { useGetUserQuery, apiSlice } from '../../store/apiSlice';
+import { logout } from '../../Store/regSlice';
+import { useGetUserQuery, apiSlice } from '../../api/apiSlice';
 import { Button } from 'antd';
+import { RootState } from '../../Store/store';
+import cl from './Header.module.sass';
+
 const Header = () => {
-  const user = useSelector((state) => state.registration.user);
+  const user = useSelector((state: RootState) => state.reg.user);
   const { userName } = user || {};
   const token = localStorage.getItem('token');
   const {
@@ -47,16 +49,16 @@ const Header = () => {
       </Link>
       {!userName ? (
         <div>
-          <Link className={cl.signIn} to={'/signIn'}>
+          <Link className={cl.signIn} to={'/sign-in'}>
             <Button>Sign In</Button>
           </Link>
-          <Link to={'/signUp'}>
+          <Link to={'/sign-up'}>
             <Button className={`${cl.signUp} ${cl.active}`}>Sign Up</Button>
           </Link>
         </div>
       ) : (
         <div className={cl.userInfo}>
-          <Link to={'/Article'}>
+          <Link to={'/new-article'}>
             <Button className={cl.active}>Create article</Button>
           </Link>
           <Link

@@ -1,16 +1,25 @@
 import cl from './Profile.module.sass';
-import { useForm } from 'react-hook-form';
+import { useForm, FieldError } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { useUpdateUserMutation } from '../../store/apiSlice';
-import { setUser } from '../../store/registrationSlice';
+import { useUpdateUserMutation } from '../../api/apiSlice';
+import { setUser } from '../../Store/regSlice';
 import { useEffect } from 'react';
+import { RootState } from '../../Store/store';
+
+type UserData = {
+  email: string;
+  username: string;
+  password: string;
+  image: string;
+};
 
 const Profile = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [updateUser] = useUpdateUserMutation();
-  const user = useSelector((state) => state.registration.user);
+  const user = useSelector((state: RootState) => state.reg.user);
+
   const {
     register,
     handleSubmit,
@@ -18,23 +27,27 @@ const Profile = () => {
     trigger,
     reset,
     setValue,
-  } = useForm();
+  } = useForm<UserData>();
 
   useEffect(() => {
-    for (const [key, value] of Object.entries(user)) {
-      setValue(key, value);
+    if (user) {
+      for (const [key, value] of Object.entries(user)) {
+        setValue(key as keyof UserData, value as string);
+      }
     }
-  }, [setValue]);
+  }, [setValue, user]);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: UserData) => {
     console.log(data);
     try {
-      const response = await updateUser({
-        username: data.userName,
+      const updateData = {
+        username: data.username,
         email: data.email,
-        password: data.newPassword,
-        image: data.urlImage,
-      }).unwrap();
+        password: data.password,
+        image: data.image, 
+      };
+
+      const response = await updateUser(updateData).unwrap();
       dispatch(
         setUser({
           userName: response.user.username,
@@ -55,11 +68,11 @@ const Profile = () => {
       <h1 className={cl.title}>Edit Profile</h1>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className={cl.wrap}>
-          <label className={cl.labelEmail} htmlFor="">
+          <label className={cl.labelEmail} htmlFor="username">
             User name
           </label>
           <input
-            {...register('userName', {
+            {...register('username', {
               required: 'Enter username',
               minLength: {
                 value: 3,
@@ -72,18 +85,19 @@ const Profile = () => {
             })}
             placeholder="User name"
             type="text"
-            onBlur={() => trigger('userName')}
-            className={errors.userName ? `${cl.userName} ${cl.inputRed}` : cl.userName}
+            onBlur={() => trigger('username')}
+            className={errors.username ? `${cl.userName} ${cl.inputRed}` : cl.userName}
           />
-          {errors.userName && <p className={cl.error}>{errors.userName.message}</p>}
-          <label className={cl.labelEmail} htmlFor="">
+          {errors.username && <p className={cl.error}>{(errors.username as FieldError).message}</p>}
+
+          <label className={cl.labelEmail} htmlFor="email">
             Email address
           </label>
           <input
             {...register('email', {
               required: 'Enter your email',
               pattern: {
-                value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
+                value: /^[a-zA-Z0-9._%+-]+@[a-zAZ0-9.-]+\.[a-zA-Z]{2,4}$/,
                 message: 'Invalid mail format',
               },
             })}
@@ -92,8 +106,9 @@ const Profile = () => {
             type="email"
             className={errors.email ? `${cl.email} ${cl.inputRed}` : cl.email}
           />
-          {errors.email && <p className={cl.error}>{errors.email.message}</p>}
-          <label className={cl.labelPassword} htmlFor="">
+          {errors.email && <p className={cl.error}>{(errors.email as FieldError).message}</p>}
+
+          <label className={cl.labelPassword} htmlFor="password">
             New password
           </label>
           <input
@@ -110,18 +125,16 @@ const Profile = () => {
             })}
             placeholder="New password"
             type="password"
-            onBlur={() => trigger('newPassword')}
-            className={
-              errors.newPassword ? `${cl.password} ${cl.inputRed}` : cl.password
-            }
+            onBlur={() => trigger('password')}
+            className={errors.password ? `${cl.password} ${cl.inputRed}` : cl.password}
           />
-          {errors.newPassword && <p className={cl.error}>{errors.newPassword.message}</p>}
+          {errors.password && <p className={cl.error}>{(errors.password as FieldError).message}</p>}
 
-          <label className={cl.labelPasswordAgain} htmlFor="">
+          <label className={cl.labelPasswordAgain} htmlFor="image">
             Avatar image (url)
           </label>
           <input
-            {...register('urlImage', {
+            {...register('image', {
               required: 'Enter url',
               pattern: {
                 value: /^(ftp|http|https):\/\/[^ "]+$/,
@@ -130,10 +143,10 @@ const Profile = () => {
             })}
             placeholder="Avatar image"
             type="text"
-            onBlur={() => trigger('urlImage')}
-            className={errors.urlImage ? `${cl.password} ${cl.inputRed}` : cl.password}
+            onBlur={() => trigger('image')}
+            className={errors.image ? `${cl.password} ${cl.inputRed}` : cl.password}
           />
-          {errors.urlImage && <p className={cl.error}>{errors.urlImage.message}</p>}
+          {errors.image && <p className={cl.error}>{(errors.image as FieldError).message}</p>}
         </div>
         <button type="submit" className={cl.btnLogin}>
           Save

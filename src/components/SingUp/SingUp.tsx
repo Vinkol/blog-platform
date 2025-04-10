@@ -2,9 +2,10 @@ import cl from './SignUp.module.sass';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm, FieldError } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
-import { setUser } from '../../store/registrationSlice';
-import { useCreateUserMutation } from '../../store/apiSlice';
+import { setUser } from '../../Store/regSlice';
+import { useCreateUserMutation } from '../../api/apiSlice';
 import { Button } from 'antd';
+import { ErrorResponse } from '../../types/types';
 
 const SignUp = () => {
   const dispatch = useDispatch();
@@ -21,7 +22,7 @@ const SignUp = () => {
     setError,
   } = useForm();
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: any) => {
     try {
       const resp = await createUser({
         username: data.userName,
@@ -45,13 +46,14 @@ const SignUp = () => {
       navigate('/');
     } catch (err) {
       console.error('Failed to register user: ', err);
-      if (err.data && err.data.errors) {
-        if (err.data.errors['username']) {
+      const error = err as ErrorResponse;
+      if (error.data && error.data.errors) {
+        if (error.data.errors['username']) {
           setError('userName', {
             type: 'server',
             message: 'is already taken',
           });
-        } else if (err.data.errors['email']) {
+        } else if (error.data.errors['email']) {
           setError('email', {
             type: 'server',
             message: 'is already taken',
@@ -162,14 +164,13 @@ const SignUp = () => {
         <Button
           type="primary"
           htmlType="submit"
-          className={!isConsent ? `${cl.btnLogin} ${cl.disabled}` : `${cl.btnLogin}`}
-          disabled={!isConsent}
+          className={!isConsent ? `${cl.btnLogin}` : `${cl.btnLogin}`}
         >
           Create
         </Button>
       </form>
       <p className={cl.info}>
-        Already have an account? <Link to={'/signIn'}>Sign In.</Link>
+        Already have an account? <Link to={'/sign-in'}>Sign In.</Link>
       </p>
     </div>
   );
