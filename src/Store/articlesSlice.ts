@@ -1,17 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-
-interface Article {
-  slug: string;
-  title: string;
-  body: string;
-}
-
-interface ArticlesState {
-  articles: Article[];
-  loading: boolean;
-  error: string | null;
-  currentPage: number;
-}
+import { Article, ArticlesState } from '../types/types';
 
 const initialState: ArticlesState = {
   articles: [],
