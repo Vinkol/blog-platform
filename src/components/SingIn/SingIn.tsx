@@ -1,16 +1,18 @@
-import cl from './SignIn.module.sass';
-import { Link, useNavigate } from 'react-router-dom';
-import { useForm, FieldError } from 'react-hook-form';
-import { useDispatch } from 'react-redux';
-import { setUser } from '../../Store/regSlice';
-import { useLoginUserMutation } from '../../api/apiSlice';
-import { Button } from 'antd';
-import { ErrorResponse } from '../../types/types';
+import { Link, useNavigate } from 'react-router-dom'
+import { useForm, FieldError } from 'react-hook-form'
+import { useDispatch } from 'react-redux'
+import { Button } from 'antd'
+
+import { setUser } from '../../Store/regSlice'
+import { useLoginUserMutation } from '../../api/apiSlice'
+import { ErrorResponse } from '../../types/types'
+
+import cl from './SignIn.module.sass'
 
 const SignIn = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const [loginUser] = useLoginUserMutation();
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const [loginUser] = useLoginUserMutation()
 
   const {
     register,
@@ -18,53 +20,52 @@ const SignIn = () => {
     formState: { errors },
     trigger,
     setError,
-  } = useForm();
+  } = useForm()
 
   const onSubmit = async (data: any) => {
     try {
       const response = await loginUser({
         email: data.email,
         password: data.password,
-      }).unwrap();
+      }).unwrap()
 
-      localStorage.setItem('token', response.user.token);
+      localStorage.setItem('token', response.user.token)
       dispatch(
         setUser({
           userName: response.user.username,
           email: response.user.email,
           token: response.user.token,
           urlImage:
-            response.user.urlImage || 'https://s3-alpha-sig.figma.com/img/ec78/8be1/2bf7cbea0e8e0ac709ec6af74b5bc3fa?Expires=1743984000&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=IsjM8h~DUA9w-S6BVaBSvv4KGQxj6J9M1PxakhkjEJXi2kQAQUvrlWKd6gT5KB27XD8aKCYdvFvUXev2w8igTJh8naJrkLXFHDNYu2pw27uopRhr~P1bziIqF7xp75EG~Zz51h9~3VKmk-o0D7vTTuya~k7AjysuvGXiPjX~MsHxzXiyJuL6DPpWZuFscRyqe0WUjL8tcuYRIOafRBlyKk~bgAEigKrkcKGryeA~IuM0TC8ygEq3J~gMB~Hsd3C3bHsvI6w22XUGJUcFn1UinhtCKQuJO4bC4N-UdUa3-Or-AnPapc-HCB4cCJDHPUXg9MDjEq25ZzYB2jg~VAzx~g__',
-        })
-      );
-      navigate('/');
+            response.user.urlImage ||
+            'https://s3-alpha-sig.figma.com/img/ec78/8be1/2bf7cbea0e8e0ac709ec6af74b5bc3fa?Expires=1743984000&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=IsjM8h~DUA9w-S6BVaBSvv4KGQxj6J9M1PxakhkjEJXi2kQAQUvrlWKd6gT5KB27XD8aKCYdvFvUXev2w8igTJh8naJrkLXFHDNYu2pw27uopRhr~P1bziIqF7xp75EG~Zz51h9~3VKmk-o0D7vTTuya~k7AjysuvGXiPjX~MsHxzXiyJuL6DPpWZuFscRyqe0WUjL8tcuYRIOafRBlyKk~bgAEigKrkcKGryeA~IuM0TC8ygEq3J~gMB~Hsd3C3bHsvI6w22XUGJUcFn1UinhtCKQuJO4bC4N-UdUa3-Or-AnPapc-HCB4cCJDHPUXg9MDjEq25ZzYB2jg~VAzx~g__',
+        }),
+      )
+      navigate('/')
     } catch (err) {
-      console.error('Failed to login user: ', err);
-      const error = err as ErrorResponse;
+      console.error('Failed to login user: ', err)
+      const error = err as ErrorResponse
       if (error.data && error.data.errors) {
         if (error.data.errors['email or password']) {
           setError('password', {
             type: 'server',
             message: 'email or password is invalid',
-          });
+          })
           setError('email', {
             type: 'server',
             message: 'email or password is invalid',
-          });
+          })
         }
       } else {
-        console.error('Unexpected error:', err);
+        console.error('Unexpected error:', err)
       }
     }
-  };
+  }
 
   return (
     <div className={cl.signIn}>
       <h1 className={cl.title}>Sign In</h1>
       <form onSubmit={handleSubmit(onSubmit)} className={cl.wrap}>
-        <label className={cl.labelEmail} htmlFor="">
-          Email address
-        </label>
+        <label className={cl.labelEmail}>Email address</label>
         <input
           {...register('email', {
             required: 'Enter your email',
@@ -78,9 +79,7 @@ const SignIn = () => {
           className={errors.email ? `${cl.email} ${cl.inputRed}` : cl.email}
         />
         {errors.email && <p className={cl.error}>{(errors.email as FieldError).message}</p>}
-        <label className={cl.labelPassword} htmlFor="">
-          Password
-        </label>
+        <label className={cl.labelPassword}>Password</label>
         <input
           {...register('password', {
             required: 'Enter your password',
@@ -91,11 +90,7 @@ const SignIn = () => {
           className={errors.password ? `${cl.password} ${cl.inputRed}` : cl.password}
         />
         {errors.password && <p className={cl.error}>{(errors.password as FieldError).message}</p>}
-        <Button
-          type="primary" 
-          htmlType="submit" 
-          className={cl.btnLogin} 
-        >
+        <Button type="primary" htmlType="submit" className={cl.btnLogin}>
           Login
         </Button>
       </form>
@@ -103,7 +98,7 @@ const SignIn = () => {
         Don’t have an account? <Link to={'/sign-up'}>Sign Up.</Link>
       </p>
     </div>
-  );
-};
+  )
+}
 
-export default SignIn;
+export default SignIn

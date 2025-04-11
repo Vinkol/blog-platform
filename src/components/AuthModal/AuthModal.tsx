@@ -1,9 +1,10 @@
-import React from 'react';
-import cl from './AuthModal.module.sass';
+import React from 'react'
+
+import cl from './AuthModal.module.sass'
 
 interface ModalProps {
-  message: string;
-  onClose: () => void;
+  message: string
+  onClose: () => void
 }
 
 const AuthModal: React.FC<ModalProps> = ({ message, onClose }) => {
@@ -14,7 +15,7 @@ const AuthModal: React.FC<ModalProps> = ({ message, onClose }) => {
         <button onClick={onClose}>Close</button>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AuthModal;
+export default AuthModal

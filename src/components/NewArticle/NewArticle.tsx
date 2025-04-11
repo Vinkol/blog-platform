@@ -1,20 +1,26 @@
-import { useEffect, useState } from 'react';
-import { useForm, FieldError } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
-import { useCreateArticleMutation, useUpdateArticleMutation } from '../../api/apiSlice';
-import { Tag, Input, Button } from 'antd';
-import cl from './NewArticle.module.sass';
-import { NewArticleProps } from '../../types/types';
+import { useEffect, useState } from 'react'
+import { useForm, FieldError } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
+import { Tag, Input, Button } from 'antd'
 
-const NewArticle = ({ mode = 'create', initialData = {
-  title: '',
-  body: '',
-  tagList: [],
-  description: ''
-}, articleSlug }: NewArticleProps) => {
-  const navigate = useNavigate();
-  const [tags, setTags] = useState(initialData.tagList || []);
-  const [inputValue, setInputValue] = useState('');
+import { useCreateArticleMutation, useUpdateArticleMutation } from '../../api/apiSlice'
+import { NewArticleProps } from '../../types/types'
+
+import cl from './NewArticle.module.sass'
+
+const NewArticle = ({
+  mode = 'create',
+  initialData = {
+    title: '',
+    body: '',
+    tagList: [],
+    description: '',
+  },
+  articleSlug,
+}: NewArticleProps) => {
+  const navigate = useNavigate()
+  const [tags, setTags] = useState(initialData.tagList || [])
+  const [inputValue, setInputValue] = useState('')
 
   const {
     register,
@@ -29,21 +35,21 @@ const NewArticle = ({ mode = 'create', initialData = {
       shortDescription: initialData.description || '',
       text: initialData.body || '',
     },
-  });
+  })
 
-  const [createArticle] = useCreateArticleMutation();
-  const [updateArticle] = useUpdateArticleMutation();
+  const [createArticle] = useCreateArticleMutation()
+  const [updateArticle] = useUpdateArticleMutation()
 
   const handleAddTag = () => {
     if (inputValue.trim() && !tags.includes(inputValue.trim())) {
-      setTags([...tags, inputValue.trim()]);
-      setInputValue('');
+      setTags([...tags, inputValue.trim()])
+      setInputValue('')
     }
-  };
+  }
 
   const handleRemoveTag = (removedTag: any) => {
-    setTags(tags.filter((tag: string) => tag !== removedTag));
-  };
+    setTags(tags.filter((tag: string) => tag !== removedTag))
+  }
 
   const onSubmit = async (data: any) => {
     const formattedData = {
@@ -51,45 +57,43 @@ const NewArticle = ({ mode = 'create', initialData = {
       description: data.shortDescription,
       body: data.text,
       tagList: tags,
-    };
+    }
     if (mode === 'create') {
-      await createArticle(formattedData).unwrap();
-      navigate('/');
+      await createArticle(formattedData).unwrap()
+      navigate('/')
     } else if (mode === 'edit') {
       if (!articleSlug) {
-        console.error('Ошибка: articleSlug не задан');
-        return;
+        console.error('Ошибка: articleSlug не задан')
+        return
       }
-      await updateArticle({ slug: articleSlug, updatedArticle: formattedData }).unwrap();
+      await updateArticle({ slug: articleSlug, updatedArticle: formattedData }).unwrap()
       reset({
         title: formattedData.title,
         shortDescription: formattedData.description,
         text: formattedData.body,
-      });
-      navigate('/');
+      })
+      navigate('/')
     }
-    reset();
-  };
+    reset()
+  }
 
   useEffect(() => {
     if (mode === 'edit' && initialData) {
       for (const [key, value] of Object.entries(initialData)) {
         if (key === 'title' || key === 'shortDescription' || key === 'text') {
-          setValue(key as 'title' | 'shortDescription' | 'text', value as string);
+          setValue(key as 'title' | 'shortDescription' | 'text', value as string)
         }
         if (key === 'tagList' && Array.isArray(value)) {
-          setTags(value);
+          setTags(value)
         }
       }
-      setTags(initialData.tagList || []);
+      setTags(initialData.tagList || [])
     }
-  }, [mode, initialData, setValue]);
+  }, [mode, initialData, setValue])
 
   return (
     <div className={cl.signIn}>
-      <h2 className={cl.mainTitle}>
-        {mode === 'create' ? 'Create new article' : 'Edit article'}
-      </h2>
+      <h2 className={cl.mainTitle}>{mode === 'create' ? 'Create new article' : 'Edit article'}</h2>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className={cl.wrap}>
           <label className={cl.labelTitle} htmlFor="title">
@@ -158,7 +162,7 @@ const NewArticle = ({ mode = 'create', initialData = {
         </Button>
       </form>
     </div>
-  );
-};
+  )
+}
 
-export default NewArticle;
+export default NewArticle

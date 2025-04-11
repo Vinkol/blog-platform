@@ -1,24 +1,26 @@
-import cl from './Profile.module.sass';
-import { useForm, FieldError } from 'react-hook-form';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { useUpdateUserMutation } from '../../api/apiSlice';
-import { setUser } from '../../Store/regSlice';
-import { useEffect } from 'react';
-import { RootState } from '../../Store/store';
+import { useForm, FieldError } from 'react-hook-form'
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+
+import { useUpdateUserMutation } from '../../api/apiSlice'
+import { setUser } from '../../Store/regSlice'
+import { RootState } from '../../Store/store'
+
+import cl from './Profile.module.sass'
 
 type UserData = {
-  email: string;
-  username: string;
-  password: string;
-  image: string;
-};
+  email: string
+  username: string
+  password: string
+  image: string
+}
 
 const Profile = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const [updateUser] = useUpdateUserMutation();
-  const user = useSelector((state: RootState) => state.reg.user);
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const [updateUser] = useUpdateUserMutation()
+  const user = useSelector((state: RootState) => state.reg.user)
 
   const {
     register,
@@ -27,41 +29,41 @@ const Profile = () => {
     trigger,
     reset,
     setValue,
-  } = useForm<UserData>();
+  } = useForm<UserData>()
 
   useEffect(() => {
     if (user) {
       for (const [key, value] of Object.entries(user)) {
-        setValue(key as keyof UserData, value as string);
+        setValue(key as keyof UserData, value as string)
       }
     }
-  }, [setValue, user]);
+  }, [setValue, user])
 
   const onSubmit = async (data: UserData) => {
-    console.log(data);
+    console.log(data)
     try {
       const updateData = {
         username: data.username,
         email: data.email,
         password: data.password,
-        image: data.image, 
-      };
+        image: data.image,
+      }
 
-      const response = await updateUser(updateData).unwrap();
+      const response = await updateUser(updateData).unwrap()
       dispatch(
         setUser({
           userName: response.user.username,
           email: response.user.email,
           token: response.user.token,
           urlImage: response.user.image,
-        })
-      );
-      reset();
-      navigate('/');
+        }),
+      )
+      reset()
+      navigate('/')
     } catch (err) {
-      console.error('Ошибка обновления профиля:', err);
+      console.error('Ошибка обновления профиля:', err)
     }
-  };
+  }
 
   return (
     <div className={cl.signIn}>
@@ -153,7 +155,7 @@ const Profile = () => {
         </button>
       </form>
     </div>
-  );
-};
+  )
+}
 
-export default Profile;
+export default Profile

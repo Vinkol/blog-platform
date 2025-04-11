@@ -1,10 +1,12 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { Article, NewArticle, ArticlesResponse } from '../types/types';
-import baseQuery from './api';
+import { createApi } from '@reduxjs/toolkit/query/react'
+
+import { Article, NewArticle, ArticlesResponse } from '../types/types'
+
+import baseQuery from './api'
 
 type ArticleResponse = {
-  slug: string;
-};
+  slug: string
+}
 
 export const apiSlice = createApi({
   reducerPath: 'api',
@@ -46,7 +48,7 @@ export const apiSlice = createApi({
           return [
             { type: 'Article', id: result.slug },
             { type: 'Article', id: 'LIST' },
-          ];
+          ]
         }
         return [{ type: 'Article', id: 'LIST' }]
       },
@@ -73,9 +75,9 @@ export const apiSlice = createApi({
           return [
             { type: 'Article', id: result.slug },
             { type: 'Article', id: 'LIST' },
-          ];
+          ]
         }
-        return [{ type: 'Article', id: 'LIST' }];
+        return [{ type: 'Article', id: 'LIST' }]
       },
     }),
 
@@ -110,7 +112,7 @@ export const apiSlice = createApi({
       providesTags: ['User'],
     }),
   }),
-});
+})
 
 export const {
   useGetArticlesQuery,
@@ -123,4 +125,4 @@ export const {
   useLoginUserMutation,
   useUpdateUserMutation,
   useGetUserQuery,
-} = apiSlice;
+} = apiSlice
