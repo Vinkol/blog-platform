@@ -65,7 +65,9 @@ const SignIn = () => {
     <div className={cl.signIn}>
       <h1 className={cl.title}>Sign In</h1>
       <form onSubmit={handleSubmit(onSubmit)} className={cl.wrap}>
-        <label className={cl.labelEmail}>Email address</label>
+        <label className={cl.labelEmail} htmlFor="email">
+          Email address
+        </label>
         <input
           {...register('email', {
             required: 'Enter your email',
@@ -79,7 +81,9 @@ const SignIn = () => {
           className={errors.email ? `${cl.email} ${cl.inputRed}` : cl.email}
         />
         {errors.email && <p className={cl.error}>{(errors.email as FieldError).message}</p>}
-        <label className={cl.labelPassword}>Password</label>
+        <label className={cl.labelPassword} htmlFor="password">
+          Password
+        </label>
         <input
           {...register('password', {
             required: 'Enter your password',
