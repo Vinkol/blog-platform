@@ -1,4 +1,4 @@
-import { JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import { useSelector } from 'react-redux'
@@ -11,25 +11,29 @@ import {
   useToggleLikeMutation,
 } from '../../api/apiSlice'
 import AuthModal from '../AuthModal/AuthModal'
+import { Article } from '../../types/types'
 
 import cl from './ArticlePage.module.sass'
 
 const ArticlePage = () => {
-  const { slug } = useParams()
+  const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
   const [clickDelete, setClickDelete] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [toggleLike] = useToggleLikeMutation()
-
-  const { data: articleData, isLoading, isError, refetch } = useGetArticleBySlugQuery(slug)
   const [deleteArticle] = useDeleteArticleMutation()
+
   const currentUser = useSelector((state: RootState) => state.reg.user)
 
+  const {
+    data: articleData,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetArticleBySlugQuery(slug!, { skip: !slug })
+
   const handleConfirmationDelete = async () => {
-    if (!slug) {
-      console.error('Slug is required for deletion')
-      return
-    }
+    if (!slug) return
     try {
       await deleteArticle(slug).unwrap()
       navigate('/')
@@ -38,19 +42,16 @@ const ArticlePage = () => {
     }
   }
 
-  const handleLike = async (slug: any, isLiked: any) => {
+  const handleLike = async (slug: string, isLiked: boolean) => {
     try {
       await toggleLike({ slug, isLiked }).unwrap()
       refetch()
     } catch {
       setShowAuthModal(true)
-      return
     }
   }
 
-  const handleCloseAuthModal = () => {
-    setShowAuthModal(false)
-  }
+  const handleCloseAuthModal = () => setShowAuthModal(false)
 
   if (isLoading) {
     return (
@@ -64,23 +65,30 @@ const ArticlePage = () => {
     return <div>Error loading article</div>
   }
 
-  const { title, author, createdAt, tagList, description, body, favoritesCount, favorited } =
-    articleData.article
+  const {
+    title,
+    user,
+    createdAt,
+    tagList,
+    description,
+    body,
+    favoritesCount,
+    favorited,
+    slug: articleSlug,
+  } = articleData as Article
+
   return (
     <div className={cl.article}>
       <div className={cl.wrap}>
         <div className={cl.headerWrap}>
           <h1 className={cl.articleTitle}>{title}</h1>
-          <button
-            className={cl.articleFavorite}
-            onClick={() => handleLike(articleData.article.slug, favorited)}
-          >
+          <button className={cl.articleFavorite} onClick={() => handleLike(articleSlug, favorited)}>
             {favorited ? '❤️' : '🤍'} {favoritesCount}
           </button>
         </div>
         <div className={cl.articleAuthor}>
           <div>
-            <h4>{author.username}</h4>
+            <h4>{user?.username}</h4>
             <p>
               {new Date(createdAt).toLocaleDateString('en-US', {
                 month: 'long',
@@ -89,44 +97,26 @@ const ArticlePage = () => {
               })}
             </p>
           </div>
-          <img className={cl.articleUserImg} src={author.image} alt="Author" />
+          <img
+            className={cl.articleUserImg}
+            src={user?.image || '/default-avatar.png'}
+            alt="Author"
+          />
         </div>
       </div>
+
       <div className={cl.tags}>
-        {tagList.map(
-          (
-            tag:
-              | string
-              | number
-              | bigint
-              | boolean
-              | ReactElement<unknown, string | JSXElementConstructor<any>>
-              | Iterable<ReactNode>
-              | ReactPortal
-              | Promise<
-                  | string
-                  | number
-                  | bigint
-                  | boolean
-                  | ReactPortal
-                  | ReactElement<unknown, string | JSXElementConstructor<any>>
-                  | Iterable<ReactNode>
-                  | null
-                  | undefined
-                >
-              | null
-              | undefined,
-            index: Key | null | undefined,
-          ) => (
-            <button key={index} className={cl.articleTags}>
-              {tag}
-            </button>
-          ),
-        )}
+        {tagList?.map((tag) => (
+          <button key={tag} className={cl.articleTags}>
+            {tag}
+          </button>
+        ))}
       </div>
+
       <div className={cl.articleChange}>
         <p className={cl.description}>{description}</p>
-        {currentUser?.userName === author.username && (
+
+        {currentUser?.userName === user?.username && (
           <div className={cl.actions}>
             <button className={cl.btnDelete} onClick={() => setClickDelete(true)}>
               Delete
@@ -134,7 +124,7 @@ const ArticlePage = () => {
             <button
               className={cl.btnEdit}
               onClick={() =>
-                navigate(`/editArticle/${slug}`, { state: { article: articleData?.article } })
+                navigate(`/editArticle/${articleSlug}`, { state: { article: articleData } })
               }
             >
               Edit
@@ -142,6 +132,7 @@ const ArticlePage = () => {
           </div>
         )}
       </div>
+
       {clickDelete && (
         <div className={cl.confirmation}>
           <h4 className={cl.confirmationTitle}>Delete the article</h4>
@@ -156,7 +147,9 @@ const ArticlePage = () => {
           </div>
         </div>
       )}
+
       <ReactMarkdown>{body}</ReactMarkdown>
+
       {showAuthModal && (
         <AuthModal message="Пройдите авторизацию!" onClose={handleCloseAuthModal} />
       )}

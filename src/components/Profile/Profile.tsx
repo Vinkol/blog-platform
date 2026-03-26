@@ -55,7 +55,7 @@ const Profile = () => {
           userName: response.user.username,
           email: response.user.email,
           token: response.user.token,
-          urlImage: response.user.image,
+          image: response.user.image,
         }),
       )
       reset()

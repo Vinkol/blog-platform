@@ -19,14 +19,7 @@ const EditArticle = () => {
     return <div>Loading...</div>
   }
 
-  return (
-    <NewArticle
-      mode="edit"
-      initialData={article}
-      articleSlug={article.slug}
-      description={article.description}
-    />
-  )
+  return <NewArticle mode="edit" initialData={article} articleSlug={article.slug} />
 }
 
 export default EditArticle

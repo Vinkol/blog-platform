@@ -5,7 +5,7 @@ import { Button } from 'antd'
 
 import { setUser } from '../../Store/regSlice'
 import { useCreateUserMutation } from '../../api/apiSlice'
-import { ErrorResponse } from '../../types/types'
+import { ErrorResponse, SignInFormData } from '../../types/types'
 
 import cl from './SignUp.module.sass'
 
@@ -22,9 +22,9 @@ const SignUp = () => {
     trigger,
     reset,
     setError,
-  } = useForm()
+  } = useForm<SignInFormData>()
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: SignInFormData) => {
     try {
       const resp = await createUser({
         username: data.userName,

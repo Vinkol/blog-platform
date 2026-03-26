@@ -84,7 +84,7 @@ const ArticleList = () => {
           </div>
           <div className={cl.articleUser}>
             <div className={cl.articleUserWrap}>
-              <h4 className={cl.articleUserName}>{article.author.username}</h4>
+              <h4 className={cl.articleUserName}>{article.author?.username || 'Unknown author'}</h4>
               <p className={cl.articlePostTime}>
                 {new Date(article.createdAt).toLocaleDateString('en-US', {
                   month: 'long',
@@ -93,7 +93,7 @@ const ArticleList = () => {
                 })}
               </p>
             </div>
-            <img className={cl.articleUserImg} src={article.author.image} alt="IMAGE" />
+            <img className={cl.articleUserImg} src={article.author?.image} alt="IMAGE" />
           </div>
         </div>
       ))}
