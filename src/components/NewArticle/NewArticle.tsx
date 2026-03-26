@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Tag, Input, Button } from 'antd'
 
 import { useCreateArticleMutation, useUpdateArticleMutation } from '../../api/apiSlice'
-import { NewArticleProps } from '../../types/types'
+import { NewArticleProps, FormData } from '../../types/types'
 
 import cl from './NewArticle.module.sass'
 
@@ -29,7 +29,7 @@ const NewArticle = ({
     formState: { errors },
     trigger,
     reset,
-  } = useForm({
+  } = useForm<FormData>({
     defaultValues: {
       title: initialData.title || '',
       shortDescription: initialData.description || '',
@@ -47,11 +47,11 @@ const NewArticle = ({
     }
   }
 
-  const handleRemoveTag = (removedTag: any) => {
+  const handleRemoveTag = (removedTag: string) => {
     setTags(tags.filter((tag: string) => tag !== removedTag))
   }
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FormData) => {
     const formattedData = {
       title: data.title,
       description: data.shortDescription,

@@ -74,3 +74,9 @@ export interface ArticlesState {
   error: string | null
   currentPage: number
 }
+
+export interface FormData {
+  title: string
+  shortDescription: string
+  text: string
+}
