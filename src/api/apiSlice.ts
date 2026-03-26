@@ -4,17 +4,13 @@ import { Article, NewArticle, ArticlesResponse } from '../types/types'
 
 import baseQuery from './api'
 
-type ArticleResponse = {
-  slug: string
-}
-
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery,
   tagTypes: ['Article', 'User'],
   endpoints: (builder) => ({
-    getArticles: builder.query<ArticlesResponse, { limit?: number; offset?: number }>({
-      query: ({ limit = 10, offset = 0 }) => `/articles?limit=${limit}&offset=${offset}`,
+    getArticles: builder.query<ArticlesResponse, { limit?: number; offset?: number } | void>({
+      query: ({ limit = 10, offset = 0 } = {}) => `/articles?limit=${limit}&offset=${offset}`,
       providesTags: (result) =>
         result?.articles
           ? [
@@ -23,9 +19,10 @@ export const apiSlice = createApi({
             ]
           : [{ type: 'Article', id: 'LIST' }],
     }),
-    getArticleBySlug: builder.query<Article, any>({
+
+    getArticleBySlug: builder.query<Article, string>({
       query: (slug) => `/articles/${slug}`,
-      providesTags: (slug: any) => [{ type: 'Article', id: slug }],
+      providesTags: (result, error, slug) => [{ type: 'Article', id: slug }],
     }),
 
     createArticle: builder.mutation<Article, NewArticle>({
@@ -43,24 +40,22 @@ export const apiSlice = createApi({
         method: 'PUT',
         body: { article: updatedArticle },
       }),
-      invalidatesTags: (result) => {
-        if (result && result.slug) {
-          return [
-            { type: 'Article', id: result.slug },
-            { type: 'Article', id: 'LIST' },
-          ]
-        }
-        return [{ type: 'Article', id: 'LIST' }]
-      },
+      invalidatesTags: (result) =>
+        result
+          ? [
+              { type: 'Article', id: result.slug },
+              { type: 'Article', id: 'LIST' },
+            ]
+          : [{ type: 'Article', id: 'LIST' }],
     }),
 
     deleteArticle: builder.mutation<void, string>({
-      query: (articleSlug) => ({
-        url: `/articles/${articleSlug}`,
+      query: (slug) => ({
+        url: `/articles/${slug}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (articleSlug: any) => [
-        { type: 'Article', id: articleSlug },
+      invalidatesTags: (_, __, slug) => [
+        { type: 'Article', id: slug },
         { type: 'Article', id: 'LIST' },
       ],
     }),
@@ -70,18 +65,13 @@ export const apiSlice = createApi({
         url: `/articles/${slug}/favorite`,
         method: isLiked ? 'DELETE' : 'POST',
       }),
-      invalidatesTags: (result: ArticleResponse | void) => {
-        if (result && 'slug' in result) {
-          return [
-            { type: 'Article', id: result.slug },
-            { type: 'Article', id: 'LIST' },
-          ]
-        }
-        return [{ type: 'Article', id: 'LIST' }]
-      },
+      invalidatesTags: (_, __, { slug }) => [
+        { type: 'Article', id: slug },
+        { type: 'Article', id: 'LIST' },
+      ],
     }),
 
-    createUser: builder.mutation<any, { email: string; password: string; username: string }>({
+    createUser: builder.mutation<Article, { email: string; password: string; username: string }>({
       query: (newUser) => ({
         url: '/users',
         method: 'POST',
@@ -90,15 +80,7 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: 'User', id: 'LIST' }],
     }),
 
-    updateUser: builder.mutation<any, { email: string; username: string }>({
-      query: (updatedUser) => ({
-        url: '/user',
-        method: 'PUT',
-        body: { user: updatedUser },
-      }),
-    }),
-
-    loginUser: builder.mutation<any, { email: string; password: string }>({
+    loginUser: builder.mutation<Article, { email: string; password: string }>({
       query: (userCredentials) => ({
         url: '/users/login',
         method: 'POST',
@@ -107,7 +89,16 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: 'User', id: 'LIST' }],
     }),
 
-    getUser: builder.query<any, void>({
+    updateUser: builder.mutation<Article, { email?: string; username?: string; image?: string }>({
+      query: (updatedUser) => ({
+        url: '/user',
+        method: 'PUT',
+        body: { user: updatedUser },
+      }),
+      invalidatesTags: [{ type: 'User', id: 'LIST' }],
+    }),
+
+    getUser: builder.query<Article, void>({
       query: () => '/user',
       providesTags: ['User'],
     }),
