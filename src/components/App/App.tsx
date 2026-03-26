@@ -84,7 +84,7 @@ const App: React.FC = () => {
                       exit={{ opacity: 0, y: 100 }}
                       transition={{ duration: 0.5 }}
                     >
-                      <NewArticle description={''} />
+                      <NewArticle />
                     </motion.div>
                   }
                 />
