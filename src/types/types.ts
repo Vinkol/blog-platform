@@ -1,15 +1,11 @@
+// Автор статьи
+export interface Author {
+  username: string
+  image: string
+}
+
+// Статья (как приходит с API)
 export interface Article {
-  article: {
-    slug(slug: any, favorited: any): void
-    title: any
-    author: any
-    createdAt: any
-    tagList: any
-    description: any
-    body: any
-    favoritesCount: any
-    favorited: any
-  }
   slug: string
   title: string
   description: string
@@ -19,19 +15,17 @@ export interface Article {
   updatedAt: string
   favorited: boolean
   favoritesCount: number
-  author: {
-    username: string
-    image: string
-  }
+  author: Author
+  user: User
 }
 
-export interface ArticlesState {
+// Ответ со списком статей
+export interface ArticlesResponse {
   articles: Article[]
-  loading: boolean
-  error: string | null
-  currentPage: number
+  articlesCount: number
 }
 
+// Новый/обновляемый article
 export interface NewArticle {
   title: string
   description: string
@@ -40,24 +34,43 @@ export interface NewArticle {
 }
 
 export interface NewArticleProps {
-  description: string
   mode?: 'create' | 'edit'
-  initialData?: {
-    description: string
-    title: string
-    body: string
-    tagList: string[]
-  }
+  initialData?: NewArticle
   articleSlug?: string
 }
 
-export interface ArticlesResponse {
-  articles: Article[]
-  articlesCount: number
+// Пользователь (логин/регистрация)
+export interface User {
+  email: string
+  username: string
+  token: string
+  image: string
 }
 
+// Ответ логина/регистрации
+export interface LoginResponse {
+  user: User
+}
+
+// Ошибка API
 export interface ErrorResponse {
   data?: {
     errors: Record<string, string>
   }
+}
+
+// Форма SignIn / SignUp
+export interface SignInFormData {
+  userName: string
+  email: string
+  password: string
+  passwordAgain: string
+  consent: boolean
+}
+
+export interface ArticlesState {
+  articles: Article[]
+  loading: boolean
+  error: string | null
+  currentPage: number
 }
